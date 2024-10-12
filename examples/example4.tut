@@ -1,0 +1,4 @@
+do {
+    declare count <- 5
+    output "Counting
+} until count == 0

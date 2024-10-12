@@ -1,0 +1,8 @@
+def factorial(n) {
+    declare fact <- 1
+    loop n {
+        fact <- fact * n
+        n <- n - 1
+    }
+    return fact
+}
