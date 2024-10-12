@@ -1,0 +1,5 @@
+if (x == 10) {
+    output "x is ten"
+} else {
+    output "x is not ten"
+}

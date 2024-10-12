@@ -1,0 +1,5 @@
+declare x <- 10
+declare y <- x + 5
+if x >= @ {
+    x <- x - 2
+}

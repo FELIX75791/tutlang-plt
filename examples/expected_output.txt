@@ -1,0 +1,61 @@
+Example 1:
+
+<KEYWORD, declare>
+<IDENTIFIER, a>
+<OPERATOR, <->
+
+Example 2:
+
+<KEYWORD, def>
+<IDENTIFIER, factorial>
+<LPAR, (>
+<IDENTIFIER, n>
+<RPAR, )>
+<LBRACE, {>
+<KEYWORD, declare>
+<IDENTIFIER, fact>
+<OPERATOR, <->
+<INTLITERAL, 1>
+<KEYWORD, loop>
+<IDENTIFIER, n>
+<LBRACE, {>
+<IDENTIFIER, fact>
+<OPERATOR, <->
+<IDENTIFIER, fact>
+<OPERATOR, *>
+<IDENTIFIER, n>
+<IDENTIFIER, n>
+<OPERATOR, <->
+<IDENTIFIER, n>
+<OPERATOR, ->
+<INTLITERAL, 1>
+<RBRACE, }>
+<KEYWORD, return>
+<IDENTIFIER, fact>
+<RBRACE, }>
+
+Example 3:
+
+<KEYWORD, if>
+<LPAR, (>
+<IDENTIFIER, x>
+<OPERATOR, ==>
+<INTLITERAL, 10>
+<RPAR, )>
+<LBRACE, {>
+<KEYWORD, output>
+<STRINGLITERAL, "x is ten>
+<RBRACE, }>
+<KEYWORD, else>
+<LBRACE, {>
+<KEYWORD, output>
+<STRINGLITERAL, "x is not ten>
+<RBRACE, }>
+
+Example 4:
+
+Lexical error: Unterminated string literal at position 39
+
+Example 5:
+
+Lexical error: Unexpected character '@' at position 43
