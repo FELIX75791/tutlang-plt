@@ -113,8 +113,6 @@ RelationalOp     -> "==" | "!=" | "<=" | ">=" | "<" | ">"
 
 ### LL(1) Parsing Table
 
-### LL(1) Parsing Table
-
 | Non-terminal      | declare                    | def                        | IDENTIFIER                | if                             | do                             | loop                           | output                         | return                         | `{`                            | `(`                            | INTLITERAL                    | STRINGLITERAL                  | `,`                           | `)`                           | `}`                           | ε           |
 |-------------------|----------------------------|----------------------------|---------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|-------------|
 | **Program**       | Program → StatementList    | Program → StatementList    | Program → StatementList   | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        |                                  | Program → StatementList        |                                  |                                  |                                  |                                  | ε           |
