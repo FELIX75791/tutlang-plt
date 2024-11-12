@@ -103,7 +103,23 @@ class Scanner:
                     self.tokens.append(('OPERATOR', code[start:i]))
                 self.state = 'START'  # Reinitialize state
                 start = i  # Reset start for the next token
-
+                
+        # After loop: Finalize any remaining tokens
+        if self.state == 'IDENTIFIER':
+            identifier = code[start:i]
+            if identifier in {"declare", "def", "if", "else", "do", "until", "loop", "return", "output"}:
+                self.tokens.append(('KEYWORD', identifier))
+            else:
+                self.tokens.append(('IDENTIFIER', identifier))
+        elif self.state == 'NUMBER':
+            number = code[start:i]
+            self.tokens.append(('INTLITERAL', number))
+        elif self.state == 'OPERATOR':
+            self.tokens.append(('OPERATOR', code[start:i]))
+        elif self.state == 'STRING':
+            print(f"Lexical error: Unterminated string literal at position {start}")
+            return
+        
         return self.tokens
 
 

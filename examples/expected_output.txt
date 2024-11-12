@@ -3,6 +3,7 @@ Example 1:
 <KEYWORD, declare>
 <IDENTIFIER, a>
 <OPERATOR, <->
+<INTLITERAL, 5>
 
 Example 2:
 

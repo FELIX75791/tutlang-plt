@@ -1,3 +1,7 @@
+import sys
+import json
+import re
+
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens  # List of tokens from the lexer
@@ -43,6 +47,10 @@ class Parser:
             return self.parse_loop_statement()
         elif token_type == 'KEYWORD' and value == 'output':
             return self.parse_output_statement()
+        elif token_type == 'KEYWORD' and value == 'def':
+            return self.parse_function()  # Handle function definitions
+        elif token_type == 'KEYWORD' and value == 'return':
+            return self.parse_return_statement()  # Handle return statements
         else:
             raise SyntaxError(f"Unexpected token: {token_type} {value}")
 
@@ -91,6 +99,43 @@ class Parser:
         string_literal = self.match("STRINGLITERAL")
         return {"OutputStatement": {"StringLiteral": string_literal[1]}}
 
+    def parse_function(self):
+        # Match the "def" keyword
+        self.match("KEYWORD", "def")
+        # Get the function name
+        function_name = self.match("IDENTIFIER")
+        # Match the opening parenthesis
+        self.match("LPAR")
+        # Parse the parameter list
+        parameters = self.parse_parameter_list()
+        # Match the closing parenthesis
+        self.match("RPAR")
+        # Parse the function body
+        body = self.parse_block()
+        
+        return {
+            "Function": {
+                "Name": function_name[1],
+                "Parameters": parameters,
+                "Body": body
+            }
+        }
+
+    def parse_parameter_list(self):
+        # Parse parameters within the function definition
+        parameters = []
+        if self.current_token()[0] == "IDENTIFIER":
+            parameters.append(self.match("IDENTIFIER")[1])
+            while self.current_token() and self.current_token()[0] == "COMMA":
+                self.match("COMMA")
+                parameters.append(self.match("IDENTIFIER")[1])
+        return parameters
+
+    def parse_return_statement(self):
+        self.match("KEYWORD", "return")
+        expression = self.parse_expression()
+        return {"Return": {"Expression": expression}}
+
     # Parsing blocks, conditions, expressions, terms, and factors
 
     def parse_block(self):
@@ -127,6 +172,8 @@ class Parser:
 
     def parse_factor(self):
         token = self.current_token()
+        if token is None:
+            raise SyntaxError("Unexpected end of input while parsing a factor")
         if token[0] == "IDENTIFIER":
             return {"Identifier": self.match("IDENTIFIER")[1]}
         elif token[0] == "INTLITERAL":
@@ -138,19 +185,37 @@ class Parser:
             self.match("RPAR")
             return expr
         else:
-            raise SyntaxError("Unexpected token in expression")
+            raise SyntaxError(f"Unexpected token in expression: {token}")
 
+# Main block to execute the parser as a script
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 parser.py [tokens_file.txt]")
+        sys.exit(1)
 
-# Example tokens from lexer
-tokens = [
-    ("KEYWORD", "declare"), ("IDENTIFIER", "a"), ("OPERATOR", "<-"), ("INTLITERAL", "5"),
-    ("KEYWORD", "if"), ("LPAR", "("), ("IDENTIFIER", "a"), ("OPERATOR", "=="), ("INTLITERAL", "5"), ("RPAR", ")"),
-    ("LBRACE", "{"), ("KEYWORD", "output"), ("STRINGLITERAL", '"a is five"'), ("RBRACE", "}"),
-    ("KEYWORD", "else"),
-    ("LBRACE", "{"), ("KEYWORD", "output"), ("STRINGLITERAL", '"a is not five"'), ("RBRACE", "}")
-]
+    tokens_file = sys.argv[1]
 
-# Instantiate parser and parse tokens
-parser = Parser(tokens)
-ast = parser.parse()
-print(ast)
+    # Read tokens from file
+    try:
+        tokens = []
+        with open(tokens_file, 'r') as f:
+            for line in f:
+                match = re.match(r"<([^,]+),\s*(.+)>", line.strip())
+                if match:
+                    token_type = match.group(1)
+                    token_value = match.group(2).strip('"')
+                    tokens.append((token_type, token_value))
+                else:
+                    print("Error: Incorrect token format in tokens file.")
+                    sys.exit(1)
+
+    except FileNotFoundError:
+        print(f"Error: File '{tokens_file}' not found!")
+        sys.exit(1)
+
+    # Initialize and run the parser
+    parser = Parser(tokens)
+    ast = parser.parse()
+
+    # Output the AST in JSON format for readability
+    print(json.dumps(ast, indent=2))
