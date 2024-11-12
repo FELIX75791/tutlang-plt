@@ -26,13 +26,17 @@ docker run -it --rm -v $(pwd):/usr/src/app tutlang
 
 ### Execute the Lexer Only
 
-```./tut_lexer.sh [input_file.tut]```
+```
+./tut_lexer.sh [input_file.tut]
+```
 
 Five examples are given in the `./examples_lexer` folder, and the expected outputs are in the file `./examples_lexer/expected_output.txt` Examples 1-3 shows the normal situation where the output is a valid AST, whereas examples 4-5 shows the error handling capabilities of the lexer.
 
 ### Execute the Parser (Automatically Calls Lexer)
 
-```./tut_parser.sh [input_file.tut]```
+```
+./tut_parser.sh [input_file.tut]
+```
 
 The parser will first call lexer to give the token list of the input_file, then run parser to give the AST. So you dont have to run lexer first before run parser and thus simplify the steps.
 
