@@ -37,20 +37,24 @@ Example 2:
 
 Example 3:
 
+<KEYWORD, declare>
+<IDENTIFIER, x>
+<OPERATOR, <->
+<INTLITERAL, 20>
 <KEYWORD, if>
 <LPAR, (>
 <IDENTIFIER, x>
-<OPERATOR, ==>
+<OPERATOR, >>
 <INTLITERAL, 10>
 <RPAR, )>
 <LBRACE, {>
 <KEYWORD, output>
-<STRINGLITERAL, "x is ten>
+<STRINGLITERAL, "x is greater than 10>
 <RBRACE, }>
 <KEYWORD, else>
 <LBRACE, {>
 <KEYWORD, output>
-<STRINGLITERAL, "x is not ten>
+<STRINGLITERAL, "x is 10 or less>
 <RBRACE, }>
 
 Example 4:
