@@ -10,34 +10,37 @@ readable code. The syntax will be intentionally limited to basic constructs like
 conditional statements (if, else), loops (while, loop), and mathematical operations (+, -, *). Additionally,
 the language will support function definitions (def), making it capable of modular programming.
 
+## Installation and Execution Steps
 
+### Build the Docker Image
 
+```bash
+docker build -t tutlang .
+```
 
-## Installation/Execution Step
+### Run Docker Container
 
-Build the Docker Image
+```bash
+docker run -it --rm -v $(pwd):/usr/src/app tutlang
+```
 
-```docker build -t tutlang-lexer .```
-
-Run Docker container:
-
-```docker run -it --rm -v $(pwd):/usr/src/app tutlang-lexer```
-
-Execute the Lexer
+### Execute the Lexer Only
 
 ```./tut_lexer.sh [input_file.tut]```
 
-Execute the Parser
+Five examples are given in the `./examples_lexer` folder, and the expected outputs are in the file `./examples_lexer/expected_output.txt` Examples 1-3 shows the normal situation where the output is a valid AST, whereas examples 4-5 shows the error handling capabilities of the lexer.
+
+### Execute the Parser (Automatically Calls Lexer)
 
 ```./tut_parser.sh [input_file.tut]```
 
-The parser will first call lexer to give the token list of the input_file, then run parser to give the AST.
+The parser will first call lexer to give the token list of the input_file, then run parser to give the AST. So you dont have to run lexer first before run parser and thus simplify the steps.
 
-Five examples are given in the `./examples` folder, and the expected outputs are in the file `./examples/expected_output.txt`
+Eight examples are given in the `./examples_parser` folder, and the expected outputs are in the file `./examples_parser/expected_output.txt`. Examples 1-4 shows the normal situation where the output is a valid AST, whereas examples 5-8 shows the error handling capabilities of the parser.
 
-## Lexer
 
-### Lexical Grammar
+## Lexical Grammar
+
 1. **KEYWORD**: `"declare" | "def" | "if" | "else" | "do" | "until" | "loop" | "return" | "output"`
 2. **OPERATOR**: `"<-" | "==" | "!=" | "<=" | ">=" | "<" | ">" | "+" | "-" | "*" | "/"`
 3. **INTLITERAL**: `[0-9]+`
@@ -50,92 +53,70 @@ Five examples are given in the `./examples` folder, and the expected outputs are
 10. **COMMA**: `","`
 11. **WHITESPACE**: `\s+`
 
-## Parser
+## Context-Free Grammar (CFG) for the Language
 
-### Context Free Grammar (CFG)
+### Non-Terminals
+- `Program`
+- `Statement`
+- `Declaration`
+- `Assignment`
+- `IfStatement`
+- `DoUntilStatement`
+- `LoopStatement`
+- `OutputStatement`
+- `Function`
+- `ParameterList`
+- `ReturnStatement`
+- `Block`
+- `Condition`
+- `Expression`
+- `Term`
+- `Factor`
+
+### Terminals
+- **Keywords**: `declare`, `def`, `if`, `else`, `do`, `until`, `loop`, `output`, `return`
+- **Identifiers**: `IDENTIFIER`
+- **Operators**: `<-`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `+`, `-`, `*`, `/`
+- **Literals**: `INTLITERAL`, `STRINGLITERAL`
+- **Symbols**: `(`, `)`, `{`, `}`, `,`
+
+### Rules
 ```
-Program          -> StatementList
+Program → Statement Program | ε
 
-StatementList    -> Statement StatementList | ε
+Statement → Declaration | Assignment | IfStatement | DoUntilStatement | LoopStatement | OutputStatement | Function | ReturnStatement
 
-Statement        -> Declaration 
-                 | Function 
-                 | Assignment 
-                 | ControlStatement 
-                 | OutputStatement 
-                 | ReturnStatement
+Declaration → declare IDENTIFIER <- Expression
 
-Declaration      -> "declare" IDENTIFIER "<-" Expression
+Assignment → IDENTIFIER <- Expression
 
-Function         -> "def" IDENTIFIER "(" ParameterList ")" Block
+IfStatement → if ( Condition ) Block ElseClause  
+ElseClause → else Block | ε
 
-Assignment       -> IDENTIFIER "<-" Expression
+DoUntilStatement → do Block until Condition
 
-ControlStatement -> IfStatement 
-                 | DoUntilStatement 
-                 | LoopStatement
+LoopStatement → loop Expression Block
 
-IfStatement      -> "if" "(" Condition ")" Block ElseClause
+OutputStatement → output STRINGLITERAL
 
-ElseClause       -> "else" Block | ε
+Function → def IDENTIFIER ( ParameterList ) Block
 
-DoUntilStatement -> "do" Block "until" Condition
+ParameterList → IDENTIFIER ParameterListTail | ε  
+ParameterListTail → , IDENTIFIER ParameterListTail | ε
 
-LoopStatement    -> "loop" Expression Block
+ReturnStatement → return Expression
 
-OutputStatement  -> "output" STRINGLITERAL
+Block → { StatementList }  
+StatementList → Statement StatementList | ε
 
-ReturnStatement  -> "return" Expression
+Condition → Expression RelationalOp Expression  
+RelationalOp → == | != | < | > | <= | >=
 
-Condition        -> Expression RelationalOp Expression
+Expression → Term ExpressionTail  
+ExpressionTail → + Term ExpressionTail | - Term ExpressionTail | ε
 
-Expression       -> Term Expression'
+Term → Factor TermTail  
+TermTail → * Factor TermTail | / Factor TermTail | ε
 
-Expression'      -> ("+" | "-") Term Expression' | ε
-
-Term             -> Factor Term'
-
-Term'            -> ("*" | "/") Factor Term' | ε
-
-Factor           -> IDENTIFIER 
-                 | INTLITERAL 
-                 | STRINGLITERAL 
-                 | "(" Expression ")"
-
-Block            -> "{" StatementList "}"
-
-ParameterList    -> IDENTIFIER ParameterList'
-
-ParameterList'   -> "," IDENTIFIER ParameterList' | ε
-
-RelationalOp     -> "==" | "!=" | "<=" | ">=" | "<" | ">"
+Factor → IDENTIFIER | INTLITERAL | STRINGLITERAL | ( Expression )
 ```
-
-### LL(1) Parsing Table
-
-### LL(1) Parsing Table
-
-| Non-terminal      | declare                    | def                        | IDENTIFIER                | if                             | do                             | loop                           | output                         | return                         | `{`                            | `(`                            | INTLITERAL                    | STRINGLITERAL                  | `,`                           | `)`                           | `}`                           | ε           |
-|-------------------|----------------------------|----------------------------|---------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|-------------|
-| **Program**       | Program → StatementList    | Program → StatementList    | Program → StatementList   | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        | Program → StatementList        |                                  | Program → StatementList        |                                  |                                  |                                  |                                  | ε           |
-| **StatementList** | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | StatementList → Statement StatementList | ε              |                | StatementList → Statement StatementList |               |        |        | ε      | ε           |
-| **Statement**     | Statement → Declaration    | Statement → Function       | Statement → Assignment    | Statement → ControlStatement   | Statement → ControlStatement   | Statement → ControlStatement   | Statement → OutputStatement    | Statement → ReturnStatement    |                                |                                |                                |                                |                                |                                |                                |             |
-| **Declaration**   | Declaration → "declare" IDENTIFIER "<-" Expression |                            |                               |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **Function**      |                            | Function → "def" IDENTIFIER "(" ParameterList ")" Block |                               |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **Assignment**    |                            |                            | Assignment → IDENTIFIER "<-" Expression |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **ControlStatement** |                          |                            |                               | ControlStatement → IfStatement | ControlStatement → DoUntilStatement | ControlStatement → LoopStatement |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **IfStatement**   |                            |                            |                               | IfStatement → "if" "(" Condition ")" Block ElseClause |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **ElseClause**    |                            |                            |                               |                                |                                |                                |                                |                                | ElseClause → "else" Block      |                                |                                |                                |                                | ε           | ε           | ε           |
-| **DoUntilStatement** |                         |                            |                               |                                | DoUntilStatement → "do" Block "until" Condition |                                |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **LoopStatement** |                            |                            |                               |                                |                                | LoopStatement → "loop" Expression Block |                                |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **OutputStatement** |                         |                            |                               |                                |                                |                                | OutputStatement → "output" STRINGLITERAL |                                |                                |                                |                                |                                |                                |                                |                                |             |
-| **ReturnStatement** |                         |                            |                               |                                |                                |                                |                                | ReturnStatement → "return" Expression |                                |                                |                                |                                |                                |                                |                                |             |
-| **Condition**     |                            |                            | Condition → Expression RelationalOp Expression |                                |                                |                                |                                |                                |                                | Condition → Expression RelationalOp Expression | Condition → Expression RelationalOp Expression | Condition → Expression RelationalOp Expression |                                |                                |                                |             |
-| **Expression**    |                            |                            | Expression → Term Expression' |                                |                                |                                |                                |                                |                                | Expression → Term Expression' | Expression → Term Expression' | Expression → Term Expression' |                                |                                |                                |             |
-| **Expression'**   | ε                          | ε                          | ε                           | ε                              | ε                              | ε                              | ε                              | ε                              | ε                              |                                | ε                              | ε                              |                                | ε                              | ε                              | ε           |
-| **Term**          |                            |                            | Term → Factor Term'         |                                |                                |                                |                                |                                |                                | Term → Factor Term'            | Term → Factor Term'            | Term → Factor Term'            |                                |                                |                                |             |
-| **Term'**         | ε                          | ε                          | ε                           | ε                              | ε                              | ε                              | ε                              | ε                              | ε                              |                                | ε                              | ε                              |                                | ε                              | ε                              | ε           |
-| **Factor**        |                            |                            | Factor → IDENTIFIER         |                                |                                |                                |                                |                                |                                | Factor → "(" Expression ")"    | Factor → INTLITERAL            | Factor → STRINGLITERAL         |                                |                                |                                |             |
-| **Block**         |                            |                            |                               |                                |                                |                                |                                |                                | Block → "{" StatementList "}"  |                                |                                |                                |                                |                                |                                |             |
-| **ParameterList** | ParameterList → IDENTIFIER ParameterList' |                            |                               |                                |                                |                                |                                |                                |                                |                                |                                |                                | ParameterList → "," IDENTIFIER ParameterList' | ε           |             |             |
-| 

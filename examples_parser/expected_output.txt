@@ -1,0 +1,215 @@
+Example 1:
+
+{
+  "Program": [
+    {
+      "Declaration": {
+        "Identifier": "a",
+        "Expression": {
+          "Literal": 5
+        }
+      }
+    },
+    {
+      "Assignment": {
+        "Identifier": "a",
+        "Expression": {
+          "Left": {
+            "Identifier": "a"
+          },
+          "Operator": "+",
+          "Right": {
+            "Literal": 10
+          }
+        }
+      }
+    }
+  ]
+}
+
+Example 2:
+
+{
+  "Program": [
+    {
+      "Declaration": {
+        "Identifier": "x",
+        "Expression": {
+          "Literal": 20
+        }
+      }
+    },
+    {
+      "IfStatement": {
+        "Condition": {
+          "Left": {
+            "Identifier": "x"
+          },
+          "Operator": ">",
+          "Right": {
+            "Literal": 10
+          }
+        },
+        "Then": [
+          {
+            "OutputStatement": {
+              "StringLiteral": "x is greater than 10"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "OutputStatement": {
+              "StringLiteral": "x is 10 or less"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+Example 3:
+
+{
+  "Program": [
+    {
+      "Declaration": {
+        "Identifier": "sum",
+        "Expression": {
+          "Literal": 0
+        }
+      }
+    },
+    {
+      "Declaration": {
+        "Identifier": "i",
+        "Expression": {
+          "Literal": 1
+        }
+      }
+    },
+    {
+      "LoopStatement": {
+        "Expression": {
+          "Identifier": "i"
+        },
+        "Block": [
+          {
+            "Assignment": {
+              "Identifier": "sum",
+              "Expression": {
+                "Left": {
+                  "Identifier": "sum"
+                },
+                "Operator": "+",
+                "Right": {
+                  "Identifier": "i"
+                }
+              }
+            }
+          },
+          {
+            "Assignment": {
+              "Identifier": "i",
+              "Expression": {
+                "Left": {
+                  "Identifier": "i"
+                },
+                "Operator": "+",
+                "Right": {
+                  "Literal": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+Example 4:
+
+{
+  "Program": [
+    {
+      "Function": {
+        "Name": "factorial",
+        "Parameters": [
+          "n"
+        ],
+        "Body": [
+          {
+            "Declaration": {
+              "Identifier": "result",
+              "Expression": {
+                "Literal": 1
+              }
+            }
+          },
+          {
+            "LoopStatement": {
+              "Expression": {
+                "Identifier": "n"
+              },
+              "Block": [
+                {
+                  "Assignment": {
+                    "Identifier": "result",
+                    "Expression": {
+                      "Left": {
+                        "Identifier": "result"
+                      },
+                      "Operator": "*",
+                      "Right": {
+                        "Identifier": "n"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Assignment": {
+                    "Identifier": "n",
+                    "Expression": {
+                      "Left": {
+                        "Identifier": "n"
+                      },
+                      "Operator": "-",
+                      "Right": {
+                        "Literal": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Return": {
+              "Expression": {
+                "Identifier": "result"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+Example 5:
+
+Expected '}' before 'until' to close the 'do' block at position 13
+
+Example 6:
+
+Expected '<-' after identifier 'x', but found '5' (type: INTLITERAL)
+
+Example 7:
+
+Expected ')' after condition at position 9
+
+Example 8:
+
+Expected '}' to close block at position 14

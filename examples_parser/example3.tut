@@ -1,0 +1,6 @@
+declare sum <- 0
+declare i <- 1
+loop i {
+    sum <- sum + i
+    i <- i + 1
+}

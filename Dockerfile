@@ -10,7 +10,7 @@ COPY . .
 # Install any Python dependencies specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make the lexer script executable (optional but useful)
+# Make the lexer and parser scripts executable
 RUN chmod +x tut_lexer.sh
 RUN chmod +x tut_parser.sh
 

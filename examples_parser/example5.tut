@@ -1,0 +1,5 @@
+declare count <- 5
+do {
+    count <- count - 1
+    output "Counting down"
+until count == 0

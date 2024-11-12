@@ -1,0 +1,4 @@
+declare y <- 15
+if (y == 10 {
+    output "y is ten"
+}

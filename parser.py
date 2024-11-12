@@ -52,39 +52,43 @@ class Parser:
         elif token_type == 'KEYWORD' and value == 'return':
             return self.parse_return_statement()  # Handle return statements
         else:
-            raise SyntaxError(f"Unexpected token: {token_type} {value}")
+            raise SyntaxError(f"Unexpected token: {token_type} {value} at position {self.pos}")
 
     def parse_declaration(self):
         self.match("KEYWORD", "declare")
         identifier = self.match("IDENTIFIER")
-        self.match("OPERATOR", "<-")
+        if not identifier:
+            raise SyntaxError(f"Expected identifier after 'declare' at position {self.pos}")
+        if not self.match("OPERATOR", "<-"):
+            raise SyntaxError(f"Expected '<-' after identifier '{identifier[1]}', but found '{self.current_token()[1]}' (type: {self.current_token()[0]})")
         expression = self.parse_expression()
         return {"Declaration": {"Identifier": identifier[1], "Expression": expression}}
 
     def parse_assignment(self):
         identifier = self.match("IDENTIFIER")
-        self.match("OPERATOR", "<-")
+        if not self.match("OPERATOR", "<-"):
+            raise SyntaxError(f"Expected '<-' after identifier '{identifier[1]}', but found '{self.current_token()[1]}' (type: {self.current_token()[0]})")
         expression = self.parse_expression()
         return {"Assignment": {"Identifier": identifier[1], "Expression": expression}}
 
     def parse_if_statement(self):
         self.match("KEYWORD", "if")
-        self.match("LPAR")
+        if not self.match("LPAR"):
+            raise SyntaxError(f"Expected '(' after 'if' at position {self.pos}")
         condition = self.parse_condition()
-        self.match("RPAR")
+        if not self.match("RPAR"):
+            raise SyntaxError(f"Expected ')' after condition at position {self.pos}")
         then_block = self.parse_block()
-
-        # Check for optional else clause
         else_block = None
         if self.match("KEYWORD", "else"):
             else_block = self.parse_block()
-
         return {"IfStatement": {"Condition": condition, "Then": then_block, "Else": else_block}}
 
     def parse_do_until_statement(self):
         self.match("KEYWORD", "do")
         block = self.parse_block()
-        self.match("KEYWORD", "until")
+        if not self.match("KEYWORD", "until"):
+            raise SyntaxError(f"Expected 'until' after 'do' block at position {self.pos}")
         condition = self.parse_condition()
         return {"DoUntilStatement": {"Block": block, "Condition": condition}}
 
@@ -97,34 +101,26 @@ class Parser:
     def parse_output_statement(self):
         self.match("KEYWORD", "output")
         string_literal = self.match("STRINGLITERAL")
+        if not string_literal:
+            raise SyntaxError(f"Expected string literal after 'output' at position {self.pos}")
         return {"OutputStatement": {"StringLiteral": string_literal[1]}}
 
     def parse_function(self):
-        # Match the "def" keyword
         self.match("KEYWORD", "def")
-        # Get the function name
         function_name = self.match("IDENTIFIER")
-        # Match the opening parenthesis
-        self.match("LPAR")
-        # Parse the parameter list
+        if not function_name:
+            raise SyntaxError(f"Expected function name after 'def' at position {self.pos}")
+        if not self.match("LPAR"):
+            raise SyntaxError(f"Expected '(' after function name '{function_name[1]}' at position {self.pos}")
         parameters = self.parse_parameter_list()
-        # Match the closing parenthesis
-        self.match("RPAR")
-        # Parse the function body
+        if not self.match("RPAR"):
+            raise SyntaxError(f"Expected ')' after parameter list at position {self.pos}")
         body = self.parse_block()
-        
-        return {
-            "Function": {
-                "Name": function_name[1],
-                "Parameters": parameters,
-                "Body": body
-            }
-        }
+        return {"Function": {"Name": function_name[1], "Parameters": parameters, "Body": body}}
 
     def parse_parameter_list(self):
-        # Parse parameters within the function definition
         parameters = []
-        if self.current_token()[0] == "IDENTIFIER":
+        if self.current_token() and self.current_token()[0] == "IDENTIFIER":
             parameters.append(self.match("IDENTIFIER")[1])
             while self.current_token() and self.current_token()[0] == "COMMA":
                 self.match("COMMA")
@@ -139,35 +135,40 @@ class Parser:
     # Parsing blocks, conditions, expressions, terms, and factors
 
     def parse_block(self):
-        self.match("LBRACE")
+        if not self.match("LBRACE"):
+            raise SyntaxError(f"Expected '{{' to start block at position {self.pos}")
         statements = []
         while self.current_token() and self.current_token()[0] != "RBRACE":
+            # Check specifically for an 'until' keyword inside a block opened by 'do'
+            if self.current_token()[1] == "until":
+                raise SyntaxError(f"Expected '}}' before 'until' to close the 'do' block at position {self.pos}")
             statements.append(self.parse_statement())
-        self.match("RBRACE")
-        return {"Block": statements}
+        if not self.match("RBRACE"):
+            raise SyntaxError(f"Expected '}}' to close block at position {self.pos}")
+        return statements
 
     def parse_condition(self):
         left = self.parse_expression()
         operator = self.match("OPERATOR")
+        if not operator or operator[1] not in ["==", "!=", "<", ">", "<=", ">="]:
+            raise SyntaxError(f"Expected a relational operator after expression at position {self.pos}")
         right = self.parse_expression()
-        return {"Condition": {"Left": left, "Operator": operator[1], "Right": right}}
+        return {"Left": left, "Operator": operator[1], "Right": right}
 
     def parse_expression(self):
-        # Parse a term and then handle additional "+" or "-" expressions
         left = self.parse_term()
         while self.current_token() and self.current_token()[1] in ["+", "-"]:
             operator = self.match("OPERATOR")
             right = self.parse_term()
-            left = {"Expression": {"Left": left, "Operator": operator[1], "Right": right}}
+            left = {"Left": left, "Operator": operator[1], "Right": right}
         return left
 
     def parse_term(self):
-        # Parse a factor and then handle additional "*" or "/" expressions
         left = self.parse_factor()
         while self.current_token() and self.current_token()[1] in ["*", "/"]:
             operator = self.match("OPERATOR")
             right = self.parse_factor()
-            left = {"Term": {"Left": left, "Operator": operator[1], "Right": right}}
+            left = {"Left": left, "Operator": operator[1], "Right": right}
         return left
 
     def parse_factor(self):
@@ -182,7 +183,8 @@ class Parser:
             return {"StringLiteral": self.match("STRINGLITERAL")[1]}
         elif self.match("LPAR"):
             expr = self.parse_expression()
-            self.match("RPAR")
+            if not self.match("RPAR"):
+                raise SyntaxError(f"Expected ')' to close expression at position {self.pos}")
             return expr
         else:
             raise SyntaxError(f"Unexpected token in expression: {token}")
@@ -215,7 +217,8 @@ if __name__ == "__main__":
 
     # Initialize and run the parser
     parser = Parser(tokens)
-    ast = parser.parse()
-
-    # Output the AST in JSON format for readability
-    print(json.dumps(ast, indent=2))
+    try:
+        ast = parser.parse()
+        print(json.dumps(ast, indent=2))
+    except SyntaxError as e:
+        print(e)

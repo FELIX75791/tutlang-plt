@@ -1,0 +1,3 @@
+def exampleFunction(x) {
+    declare y <- x + 10
+    output "y is: "
