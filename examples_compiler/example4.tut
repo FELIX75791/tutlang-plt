@@ -1,0 +1,6 @@
+declare x <- 20
+if (x > 10) {
+    output "x is greater than 10"
+} else {
+    output "x is 10 or less"
+}

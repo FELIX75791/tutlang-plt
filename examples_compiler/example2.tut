@@ -1,0 +1,5 @@
+declare sum <- 0
+loop 5 {
+    sum <- sum + 1
+    output "Current sum: " + sum
+}

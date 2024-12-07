@@ -80,17 +80,17 @@ class Scanner:
             # State for handling string literals
             elif self.state == 'STRING':
                 if self.current_char == '"':  # Closing quote
-                    string_literal = code[start:i]
+                    string_literal = code[start:i + 1]  # Include both opening and closing quotes
                     self.tokens.append(('STRINGLITERAL', string_literal))
                     self.state = 'START'  # Reinitialize state
                     i += 1  # Move past the closing quote
                     start = i  # Reset start for the next token
                 elif i == len(code) - 1:  # If the string reaches the end without closing
-                    print(
-                        f"Lexical error: Unterminated string literal at position {start}")
+                    print(f"Lexical error: Unterminated string literal at position {start}")
                     return
                 else:
                     i += 1  # Continue reading string literal
+
 
             # State for handling operators
             elif self.state == 'OPERATOR':
@@ -148,38 +148,3 @@ if __name__ == "__main__":
     if tokens:
         for token in tokens:
             print(f"<{token[0]}, {token[1]}>")
-
-
-'''
-declare a <- 5
-''',
-'''
-def factorial(n) {
-    declare fact <- 1
-    loop n {
-        fact <- fact * n
-        n <- n - 1
-    }
-    return fact
-}
-''',
-'''
-if (x == 10) {
-    output "x is ten"
-} else {
-    output "x is not ten"
-}
-''',
-'''
-do {
-    declare count <- 5
-    output "Counting
-} until count == 0
-''',
-'''
-declare x <- 10
-declare y <- x + 5
-if x >= @ {
-    x <- x - 2
-}
-'''
