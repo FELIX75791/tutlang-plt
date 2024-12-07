@@ -1,0 +1,5 @@
+declare x <- 0
+do {
+    x <- x + 2
+    output "x is now " + x
+} until (x >= 10)
