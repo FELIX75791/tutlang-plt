@@ -51,6 +51,16 @@ if [ $? -ne 0 ]; then
   echo "Parser failed. Exiting."
   exit 1
 fi
+
+# Check if AST file contains an error message
+if grep -q "An error occurred" "$AST_FILE"; then
+  echo "Parser failed: Found error message in AST file. Exiting."
+  if [ "$DEBUG" == "true" ]; then
+    cat "$AST_FILE"  # Display the error message for debugging
+  fi
+  exit 1
+fi
+
 if [ "$DEBUG" == "true" ]; then
   echo "AST generated in $AST_FILE"
 fi
