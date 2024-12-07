@@ -51,8 +51,7 @@ class Scanner:
                     start = i  # Mark start of operator
                     i += 1
                 else:
-                    print(f"Lexical error: Unexpected character '{
-                          self.current_char}' at position {i}")
+                    print(f"Lexical error: Unexpected character '{self.current_char}' at position {i}")
                     return
 
             # State for handling identifiers or keywords
