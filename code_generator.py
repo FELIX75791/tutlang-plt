@@ -7,6 +7,7 @@ class CodeGenerator:
         self.ast = ast
         self.indent_level = 0
         self.output_code = []
+        self.constants = {}
 
     def generate(self):
         self._process_program(self.ast["Program"])
@@ -36,14 +37,32 @@ class CodeGenerator:
         else:
             raise ValueError("Unknown statement type.")
 
-    def _process_declaration(self, declaration):
-        identifier = declaration["Identifier"]
-        expression = self._process_expression(declaration["Expression"])
-        self.output_code.append(f"{self._indent()}{identifier} = {expression}")
-
     def _process_assignment(self, assignment):
         identifier = assignment["Identifier"]
-        expression = self._process_expression(assignment["Expression"])
+        expression = self._process_expression(
+            assignment["Expression"], skip_constants_for={identifier}
+        )
+
+        # Update constant map if the expression is a literal
+        if "Literal" in assignment["Expression"]:
+            self.constants[identifier] = expression
+        else:
+            self.constants.pop(identifier, None)  # Remove if no longer constant
+
+        self.output_code.append(f"{self._indent()}{identifier} = {expression}")
+
+    def _process_declaration(self, declaration):
+        identifier = declaration["Identifier"]
+        expression = self._process_expression(
+            declaration["Expression"], skip_constants_for={identifier}
+        )
+
+        # Update constant map if the expression is a literal
+        if "Literal" in declaration["Expression"]:
+            self.constants[identifier] = expression
+        else:
+            self.constants.pop(identifier, None)  # Remove if no longer constant
+
         self.output_code.append(f"{self._indent()}{identifier} = {expression}")
 
     def _process_if_statement(self, if_stmt):
@@ -111,28 +130,54 @@ class CodeGenerator:
         for statement in block:
             self._process_statement(statement)
 
-    def _process_expression(self, expression):
+    def _process_expression(self, expression, skip_constants_for=None):
         """
         Processes an expression, supporting literals, identifiers, composite expressions,
         function calls, and string operations.
+        :param skip_constants_for: A set of identifiers to skip constant propagation.
         """
         # Handle literals
         if "Literal" in expression:
             return str(expression["Literal"])
         # Handle identifiers
         elif "Identifier" in expression:
-            return expression["Identifier"]
+            identifier = expression["Identifier"]
+            # Skip constant propagation for specified identifiers
+            if skip_constants_for and identifier in skip_constants_for:
+                return identifier
+            # Replace identifier with its constant value if available
+            if identifier in self.constants:
+                return self.constants[identifier]
+            return identifier
         # Handle composite expressions (e.g., concatenations, arithmetic operations)
         elif "Left" in expression and "Operator" in expression and "Right" in expression:
-            left = self._process_expression(expression["Left"])
+            left = self._process_expression(expression["Left"], skip_constants_for)
             operator = expression["Operator"]
-            right = self._process_expression(expression["Right"])
+            right = self._process_expression(expression["Right"], skip_constants_for)
 
             # Handle string concatenation explicitly
-            if operator == "+" and ("StringLiteral" in expression["Left"] or "StringLiteral" in expression["Right"]):
-                return f"str({left}) + str({right})"
-            else:
-                return f"({left} {operator} {right})"
+            if operator == "+":
+                is_left_string = left.startswith('"') or left.startswith("'")
+                is_right_string = right.startswith('"') or right.startswith("'")
+                if is_left_string or is_right_string:
+                    left = f"str({left})" if not is_left_string else left
+                    right = f"str({right})" if not is_right_string else right
+                    return f"{left} + {right}"
+
+            # Perform constant folding for literals
+            if left.isdigit() and right.isdigit():
+                left_value = int(left)
+                right_value = int(right)
+                if operator == "+":
+                    return str(left_value + right_value)
+                elif operator == "-":
+                    return str(left_value - right_value)
+                elif operator == "*":
+                    return str(left_value * right_value)
+                elif operator == "/":
+                    return str(left_value / right_value)
+
+            return f"({left} {operator} {right})"
         # Handle string literals explicitly
         elif "StringLiteral" in expression:
             return f'"{expression["StringLiteral"]}"'
@@ -140,7 +185,7 @@ class CodeGenerator:
         elif "FunctionCall" in expression:
             function_name = expression["FunctionCall"]["Name"]
             arguments = [self._process_expression(
-                arg) for arg in expression["FunctionCall"]["Arguments"]]
+                arg, skip_constants_for) for arg in expression["FunctionCall"]["Arguments"]]
             return f"{function_name}({', '.join(arguments)})"
         else:
             raise ValueError("Unknown expression type.")
