@@ -1,0 +1,7 @@
+declare a <- 0
+declare b <- 5
+declare c <- a + b
+declare d <- b * 1
+declare e <- b * 0
+declare f <- 10 / 1
+
